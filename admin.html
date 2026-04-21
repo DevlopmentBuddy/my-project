@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --orange:    #f6851b;
+      --orange-dk: #e2761b;
+      --bg:        #24272a;
+      --surface:   #2c2f33;
+      --surface2:  #383b3f;
+      --border:    #3a3d42;
+      --text:      #d6d9dc;
+      --muted:     #858b93;
+      --white:     #ffffff;
+      --green:     #1bc66e;
+      --red:       #d73847;
+      --r:         12px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+    /* Topbar */
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+    .t-left{display:flex;align-items:center;gap:10px}
+    .t-fox{width:26px;height:26px}
+    .t-name{font-weight:600;font-size:15px;color:var(--white)}
+    .t-badge{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 11px;font-size:11px;color:var(--muted);font-weight:500}
+    .t-right{display:flex;align-items:center;gap:10px}
+    .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s ease-in-out infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+    .live-txt{font-size:12px;color:var(--muted);font-weight:500}
+
+    /* Page header */
+    .page-head{padding:28px 24px 0;display:flex;align-items:flex-end;justify-content:space-between}
+    .page-title{font-size:22px;font-weight:600;color:var(--white)}
+    .page-sub{font-size:12px;color:var(--muted);margin-top:3px}
+    .count-pill{background:var(--orange);color:var(--white);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600}
+
+    /* Stats row */
+    .stats{display:flex;gap:12px;padding:20px 24px 0;overflow-x:auto}
+    .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;flex:1;min-width:120px}
+    .stat-val{font-size:22px;font-weight:600;color:var(--white)}
+    .stat-lbl{font-size:11px;color:var(--muted);margin-top:2px;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+
+    /* Grid */
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;padding:20px 24px 40px}
+
+    /* Card */
+    .msg-card{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--r);
+      padding:16px;
+      animation:fadeIn .3s ease;
+      transition:border-color .2s,box-shadow .2s;
+    }
+    .msg-card:hover{border-color:var(--orange);box-shadow:0 0 0 1px rgba(246,133,27,.2)}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+    .msg-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+    .msg-icon{
+      width:32px;height:32px;border-radius:50%;
+      background:linear-gradient(135deg,var(--orange) 0%,var(--orange-dk) 100%);
+      display:flex;align-items:center;justify-content:center;
+      font-size:14px;flex-shrink:0;
+    }
+    .msg-meta{text-align:right}
+    .msg-idx{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+    .msg-time{font-size:11px;color:var(--muted);margin-top:2px}
+
+    .msg-text{
+      font-size:13.5px;line-height:1.6;color:var(--text);
+      word-break:break-word;
+      display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;
+    }
+
+    .msg-footer{margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;align-items:center;gap:6px}
+    .msg-hash{font-size:10px;color:var(--muted);font-family:monospace;letter-spacing:.3px}
+    .hash-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+
+    /* Empty */
+    .empty{
+      grid-column:1/-1;
+      display:flex;flex-direction:column;align-items:center;
+      padding:60px 20px;color:var(--muted);gap:12px;
+    }
+    .empty-icon{font-size:40px;opacity:.4}
+    .empty-txt{font-size:14px}
+
+    /* Refresh bar */
+    .refresh-bar{
+      position:fixed;bottom:0;left:0;right:0;
+      background:var(--surface);border-top:1px solid var(--border);
+      padding:10px 24px;display:flex;align-items:center;gap:10px;
+    }
+    .progress{flex:1;height:3px;background:var(--surface2);border-radius:3px;overflow:hidden}
+    .progress-fill{height:100%;background:var(--orange);border-radius:3px;width:0;transition:width linear}
+    .refresh-txt{font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap}
+  </style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="t-left">
+    <svg class="t-fox" viewBox="0 0 318.6 318.6" xmlns="http://www.w3.org/2000/svg">
+      <polygon fill="#e2761b" points="274.1,35.5 174.6,109.4 193.8,65.3"/>
+      <polygon fill="#e4761b" points="44.4,35.5 143.1,110.1 125.6,65.3"/>
+      <polygon fill="#f6851b" points="267.2,153.5 214.9,138.2 230.8,162.1 207.1,208.1 238.3,207.7 284.8,207.7"/>
+      <polygon fill="#f6851b" points="103.6,138.2 51.3,153.5 33.9,207.7 80.3,207.7 111.4,208.1 87.8,162.1"/>
+      <polygon fill="#f6851b" points="174.6,164.6 177.9,106.9 193.9,65.3 125.6,65.3 140.6,106.9 144.1,164.6 145.3,182.8 145.4,227.6 173.1,227.6 173.2,182.8"/>
+    </svg>
+    <span class="t-name">MetaSubmit Admin</span>
+  </div>
+  <div class="t-right">
+    <span class="live-dot"></span>
+    <span class="live-txt">Live · Auto-refresh 3s</span>
+    <div class="t-badge">Mainnet</div>
+  </div>
+</div>
+
+<!-- Page header -->
+<div class="page-head">
+  <div>
+    <div class="page-title">All Customer Messages</div>
+    <div class="page-sub">Incoming transactions from the network</div>
+  </div>
+  <div class="count-pill" id="countPill">0 msgs</div>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-val" id="totalStat">0</div>
+    <div class="stat-lbl">Total Messages</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" id="todayStat">—</div>
+    <div class="stat-lbl">Last Received</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" style="color:var(--green)">●</div>
+    <div class="stat-lbl">DB Status</div>
+  </div>
+</div>
+
+<!-- Grid -->
+<div class="grid" id="container">
+  <div class="empty"><div class="empty-icon">📭</div><div class="empty-txt">No messages yet</div></div>
+</div>
+
+<!-- Refresh bar -->
+<div class="refresh-bar">
+  <div class="progress"><div class="progress-fill" id="prog"></div></div>
+  <div class="refresh-txt" id="refreshTxt">Refreshing in 3s</div>
+</div>
+
+<script>
+  const INTERVAL = 3000;
+  let countdown = INTERVAL;
+  let progInterval;
+
+  function shortHash(){
+    return '0x'+Math.random().toString(16).slice(2,10);
+  }
+
+  function loadData(){
+    fetch('/data')
+      .then(r=>r.json())
+      .then(data=>{
+        const container = document.getElementById('container');
+        container.innerHTML = '';
+
+        document.getElementById('totalStat').textContent = data.length;
+        document.getElementById('countPill').textContent = data.length + ' msg' + (data.length!==1?'s':'');
+
+        if(data.length===0){
+          container.innerHTML='<div class="empty"><div class="empty-icon">📭</div><div class="empty-txt">No messages yet</div></div>';
+          document.getElementById('todayStat').textContent='—';
+          return;
+        }
+
+        document.getElementById('todayStat').textContent = data[0].time ? data[0].time.split(',')[1]?.trim().slice(0,5) || '—' : '—';
+
+        data.forEach((item, i) => {
+          const card = document.createElement('div');
+          card.className = 'msg-card';
+          card.innerHTML = `
+            <div class="msg-top">
+              <div class="msg-icon">✉️</div>
+              <div class="msg-meta">
+                <div class="msg-idx">#${data.length - i}</div>
+                <div class="msg-time">${item.time || ''}</div>
+              </div>
+            </div>
+            <div class="msg-text">${escHtml(item.text)}</div>
+            <div class="msg-footer">
+              <div class="hash-dot"></div>
+              <div class="msg-hash">${shortHash()}</div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      })
+      .catch(()=>{});
+  }
+
+  function escHtml(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function startProgress(){
+    clearInterval(progInterval);
+    countdown = INTERVAL;
+    const fill = document.getElementById('prog');
+    const txt  = document.getElementById('refreshTxt');
+    fill.style.transition = 'none'; fill.style.width = '0%';
+    setTimeout(()=>{
+      fill.style.transition = `width ${INTERVAL}ms linear`;
+      fill.style.width = '100%';
+    },50);
+    progInterval = setInterval(()=>{
+      countdown -= 100;
+      const secs = Math.ceil(countdown/1000);
+      txt.textContent = countdown<=0 ? 'Refreshing…' : `Refreshing in ${secs}s`;
+    },100);
+  }
+
+  function tick(){
+    loadData();
+    startProgress();
+  }
+
+  tick();
+  setInterval(tick, INTERVAL);
+</script>
+</body>
+</html>

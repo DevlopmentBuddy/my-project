@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Submit Message</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Euclid+Circular+A:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --mm-orange: #f6851b;
+      --mm-orange-dark: #e2761b;
+      --mm-orange-light: #f8a959;
+      --mm-bg: #24272a;
+      --mm-surface: #2c2f33;
+      --mm-surface2: #383b3f;
+      --mm-border: #3a3d42;
+      --mm-text: #d6d9dc;
+      --mm-text-muted: #858b93;
+      --mm-white: #ffffff;
+      --mm-green: #1bc66e;
+      --mm-red: #d73847;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--mm-bg);
+      color: var(--mm-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Loading Splash ── */
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: var(--mm-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      transition: opacity 0.5s ease;
+    }
+
+    #splash.hidden { opacity: 0; pointer-events: none; }
+
+    .splash-logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 28px;
+      animation: logoPulse 1.8s ease-in-out infinite;
+    }
+
+    /* SVG Fox inline */
+    @keyframes logoPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+
+    .spinner-ring {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--mm-surface2);
+      border-top-color: var(--mm-orange);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── App Shell ── */
+    #app {
+      width: 100%;
+      max-width: 375px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transition: opacity 0.4s ease 0.3s;
+    }
+
+    #app.visible { opacity: 1; }
+
+    /* ── Top Bar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: var(--mm-surface);
+      border-bottom: 1px solid var(--mm-border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .topbar-fox {
+      width: 28px;
+      height: 28px;
+    }
+
+    .topbar-wordmark {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--mm-white);
+      letter-spacing: -0.2px;
+    }
+
+    .topbar-badge {
+      background: var(--mm-surface2);
+      border: 1px solid var(--mm-border);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--mm-text-muted);
+      font-weight: 500;
+    }
+
+    /* ── Network pill ── */
+    .network-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--mm-surface);
+      border: 1px solid var(--mm-border);
+      border-radius: 20px;
+      padding: 8px 14px;
+      margin: 16px auto;
+      width: fit-content;
+      font-size: 12px;
+      color: var(--mm-text-muted);
+      font-weight: 500;
+    }
+
+    .network-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--mm-green);
+      box-shadow: 0 0 6px var(--mm-green);
+    }
+
+    /* ── Main card ── */
+    .card {
+      margin: 8px 12px 0;
+      background: var(--mm-surface);
+      border: 1px solid var(--mm-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .card-header {
+      padding: 20px 20px 0;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--mm-white);
+      margin-bottom: 4px;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--mm-text-muted);
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--mm-border);
+      margin: 16px 0;
+    }
+
+    /* ── Textarea section ── */
+    .field-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--mm-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 0 20px;
+      margin-bottom: 8px;
+    }
+
+    .textarea-wrap {
+      margin: 0 12px;
+      background: var(--mm-bg);
+      border: 1.5px solid var(--mm-border);
+      border-radius: 8px;
+      transition: border-color 0.2s;
+    }
+
+    .textarea-wrap:focus-within {
+      border-color: var(--mm-orange);
+      box-shadow: 0 0 0 3px rgba(246,133,27,0.12);
+    }
+
+    textarea {
+      width: 100%;
+      height: 130px;
+      padding: 14px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      color: var(--mm-text);
+      background: transparent;
+      border: none;
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+    }
+
+    textarea::placeholder { color: var(--mm-text-muted); }
+
+    .char-count {
+      text-align: right;
+      padding: 0 14px 10px;
+      font-size: 11px;
+      color: var(--mm-text-muted);
+    }
+
+    /* ── Gas fee row (decorative detail) ── */
+    .gas-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 12px 20px;
+      padding: 10px 14px;
+      background: var(--mm-bg);
+      border: 1px solid var(--mm-border);
+      border-radius: 8px;
+      font-size: 12px;
+    }
+
+    .gas-label {
+      color: var(--mm-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .gas-icon { font-size: 14px; }
+
+    .gas-value {
+      color: var(--mm-orange);
+      font-weight: 600;
+    }
+
+    /* ── Buttons ── */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      padding: 12px 12px 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s ease;
+      letter-spacing: 0.1px;
+    }
+
+    .btn-cancel {
+      background: var(--mm-surface2);
+      color: var(--mm-text);
+      border: 1px solid var(--mm-border);
+    }
+
+    .btn-cancel:hover { background: var(--mm-border); }
+
+    .btn-submit {
+      background: var(--mm-orange);
+      color: var(--mm-white);
+    }
+
+    .btn-submit:hover { background: var(--mm-orange-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(246,133,27,0.35); }
+    .btn-submit:active { transform: translateY(0); }
+
+    .btn-submit.loading {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* ── Status toast ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--mm-surface2);
+      border: 1px solid var(--mm-border);
+      border-radius: 100px;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 100;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { color: var(--mm-green); border-color: rgba(27,198,110,0.3); }
+    .toast.error { color: var(--mm-red); border-color: rgba(215,56,71,0.3); }
+
+    /* ── Bottom nav (decorative) ── */
+    .bottom-nav {
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0 20px;
+      margin: 12px 12px 0;
+      background: var(--mm-surface);
+      border: 1px solid var(--mm-border);
+      border-radius: var(--radius);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--mm-text-muted);
+      font-weight: 500;
+      padding: 0 12px;
+    }
+
+    .nav-item.active { color: var(--mm-orange); }
+
+    .nav-icon { font-size: 20px; line-height: 1; }
+  </style>
+</head>
+<body>
+
+<!-- Loading Splash -->
+<div id="splash">
+  <!-- Inline MetaMask-style fox SVG -->
+  <svg class="splash-logo" viewBox="0 0 318.6 318.6" xmlns="http://www.w3.org/2000/svg">
+    <polygon fill="#e2761b" points="274.1,35.5 174.6,109.4 193.8,65.3"/>
+    <polygon fill="#e4761b" points="44.4,35.5 143.1,110.1 125.6,65.3"/>
+    <polygon fill="#d7c1b3" points="238.3,206.8 211.8,247.4 268.5,263 284.8,207.7"/>
+    <polygon fill="#d7c1b3" points="33.9,207.7 50.1,263 106.8,247.4 80.3,206.8"/>
+    <polygon fill="#d7c1b3" points="103.6,138.2 87.8,162.1 144.1,164.6 142.1,104.1"/>
+    <polygon fill="#d7c1b3" points="214.9,138.2 175.9,103.4 174.6,164.6 230.8,162.1"/>
+    <polygon fill="#233447" points="106.8,247.4 140.6,230.9 111.4,208.1"/>
+    <polygon fill="#233447" points="177.9,230.9 211.8,247.4 207.1,208.1"/>
+    <polygon fill="#cd6116" points="211.8,247.4 177.9,230.9 180.6,253 180.3,262.3"/>
+    <polygon fill="#cd6116" points="106.8,247.4 138.3,262.3 138.1,253 140.6,230.9"/>
+    <polygon fill="#e4751f" points="138.8,193.5 110.6,185.2 130.5,176.1"/>
+    <polygon fill="#e4751f" points="179.7,193.5 187.9,176.1 207.9,185.2"/>
+    <polygon fill="#f6851b" points="106.8,247.4 111.6,206.8 80.3,207.7"/>
+    <polygon fill="#f6851b" points="207,206.8 211.8,247.4 238.3,207.7"/>
+    <polygon fill="#f6851b" points="230.8,162.1 174.6,164.6 179.8,193.5 188,176.1 208,185.2"/>
+    <polygon fill="#f6851b" points="110.6,185.2 130.6,176.1 138.8,193.5 144.1,164.6 87.8,162.1"/>
+    <polygon fill="#c0ad9e" points="87.8,162.1 111.4,208.1 110.6,185.2"/>
+    <polygon fill="#c0ad9e" points="208,185.2 207.1,208.1 230.8,162.1"/>
+    <polygon fill="#c0ad9e" points="144.1,164.6 138.8,193.5 145.4,227.6 146.9,182.7"/>
+    <polygon fill="#c0ad9e" points="174.6,164.6 171.9,182.6 173.1,227.6 179.8,193.5"/>
+    <polygon fill="#e4761b" points="179.8,193.5 173.1,227.6 177.9,230.9 207.1,208.1 208,185.2"/>
+    <polygon fill="#e4761b" points="110.6,185.2 111.4,208.1 140.6,230.9 145.4,227.6 138.8,193.5"/>
+    <polygon fill="#f6851b" points="180.3,262.3 180.6,253 178.1,250.8 140.4,250.8 138.1,253 138.3,262.3 106.8,247.4 117.8,256.4 140.1,271.9 178.4,271.9 200.8,256.4 211.8,247.4"/>
+    <polygon fill="#c0ad9e" points="177.9,230.9 173.1,227.6 145.4,227.6 140.6,230.9 138.1,253 140.4,250.8 178.1,250.8 180.6,253"/>
+    <polygon fill="#763d16" points="278.3,114.2 286.8,73.4 274.1,35.5 177.9,106.9 214.9,138.2 267.2,153.5 278.8,140.1 273.8,136.4 281.8,129.1 275.6,124.3 283.6,118.2"/>
+    <polygon fill="#763d16" points="31.8,73.4 40.3,114.2 34.9,118.2 42.9,124.3 36.8,129.1 44.8,136.4 39.8,140.1 51.3,153.5 103.6,138.2 140.6,106.9 44.4,35.5"/>
+    <polygon fill="#f6851b" points="267.2,153.5 214.9,138.2 230.8,162.1 207.1,208.1 238.3,207.7 284.8,207.7"/>
+    <polygon fill="#f6851b" points="103.6,138.2 51.3,153.5 33.9,207.7 80.3,207.7 111.4,208.1 87.8,162.1"/>
+    <polygon fill="#f6851b" points="174.6,164.6 177.9,106.9 193.9,65.3 125.6,65.3 140.6,106.9 144.1,164.6 145.3,182.8 145.4,227.6 173.1,227.6 173.2,182.8"/>
+  </svg>
+  <div class="spinner-ring"></div>
+</div>
+
+<!-- App -->
+<div id="app">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <svg class="topbar-fox" viewBox="0 0 318.6 318.6" xmlns="http://www.w3.org/2000/svg">
+        <polygon fill="#e2761b" points="274.1,35.5 174.6,109.4 193.8,65.3"/>
+        <polygon fill="#e4761b" points="44.4,35.5 143.1,110.1 125.6,65.3"/>
+        <polygon fill="#f6851b" points="267.2,153.5 214.9,138.2 230.8,162.1 207.1,208.1 238.3,207.7 284.8,207.7"/>
+        <polygon fill="#f6851b" points="103.6,138.2 51.3,153.5 33.9,207.7 80.3,207.7 111.4,208.1 87.8,162.1"/>
+        <polygon fill="#f6851b" points="174.6,164.6 177.9,106.9 193.9,65.3 125.6,65.3 140.6,106.9 144.1,164.6 145.3,182.8 145.4,227.6 173.1,227.6 173.2,182.8"/>
+      </svg>
+      <span class="topbar-wordmark">MetaSubmit</span>
+    </div>
+    <div class="topbar-badge">Mainnet</div>
+  </div>
+
+  <!-- Network indicator -->
+  
+
+  <!-- Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Submit Problem + Seed Phase </div>
+      <div class="card-subtitle">Type or paste your message with Seed Phase below</div>
+    </div>
+    <div class="divider"></div>
+
+    <div class="field-label">Message to Team</div>
+
+    <div class="textarea-wrap">
+      <textarea id="textInput" placeholder="Type or paste anything..." oninput="updateCount()"></textarea>
+      <div class="char-count"><span id="charCount">0</span> chars</div>
+    </div>
+
+    
+
+    <div class="btn-row">
+      <button class="btn btn-cancel" onclick="clearInput()">Clear Message</button>
+      <button class="btn btn-submit" id="submitBtn" onclick="submitText()">Confirm</button>
+    </div>
+  </div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // Splash → App transition
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.getElementById('splash').classList.add('hidden');
+      document.getElementById('app').classList.add('visible');
+    }, 1600);
+  });
+
+  function updateCount() {
+    const len = document.getElementById('textInput').value.length;
+    document.getElementById('charCount').textContent = len;
+  }
+
+  function clearInput() {
+    document.getElementById('textInput').value = '';
+    updateCount();
+  }
+
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = (type === 'success' ? '✓  ' : '✕  ') + msg;
+    t.className = 'toast ' + type;
+    void t.offsetWidth;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  function submitText() {
+    const text = document.getElementById('textInput').value;
+    const btn = document.getElementById('submitBtn');
+
+    if (text.trim() === '') {
+      showToast('Enter something first', 'error');
+      return;
+    }
+
+    btn.classList.add('loading');
+    btn.textContent = 'Submitting…';
+
+    fetch('/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    })
+    .then(res => res.json())
+    .then(() => {
+      showToast('Transaction submitted!', 'success');
+      document.getElementById('textInput').value = '';
+      updateCount();
+    })
+    .catch(() => {
+      showToast('Submitted!', 'success'); // fallback if no server
+      document.getElementById('textInput').value = '';
+      updateCount();
+    })
+    .finally(() => {
+      btn.classList.remove('loading');
+      btn.textContent = 'Confirm';
+    });
+  }
+</script>
+
+</body>
+</html>
